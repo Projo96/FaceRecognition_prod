@@ -18,5 +18,14 @@ face_tracker:
 
 
 # ==================================================================== #
-#   Face Liveness                                                      #
+#   Compare Encodings                                                     #
 # ==================================================================== #
+face_authenticator:
+
+  tolerance: 0.5 #minimum euclidean distance between two encodings to be recognised as the same
+
+  threshold: 0.4
+
+  min_frames_to_compare : 60 #minimum number of frames to check in order to give a negative answer, the positive one can be given starting from min_frames_to_compare/5
+
+  mod : 'avg' #parameter for makeDecision we can take the minimum or the average of the distances

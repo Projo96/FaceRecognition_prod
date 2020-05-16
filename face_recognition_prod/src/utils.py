@@ -1,7 +1,7 @@
 import dlib
 import numpy as np
 import cv2
-
+import pickle
 
 def find_best_bounding_box(candidate_bounding_boxes, gray_frame):
     # computes the size of the bounding box diagonal
@@ -56,3 +56,7 @@ def compress(frame: np.array, compression_factor: float) -> np.array:
     frame = cv2.resize(frame, compressed_shape)
 
     return frame
+def encodingsRead(path):
+    ## PAY ATTENTION:: You need to create the encoding for you dataset using encode_face.py
+    data = pickle.loads(open(path, "rb").read())
+    return data
