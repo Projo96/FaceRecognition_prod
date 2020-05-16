@@ -1,7 +1,7 @@
 import cv2
 
 from src.utils import compress
-from src.face import FaceTracker
+from src.encodings import FaceEncoder
 
 WINDOW_NAME = "FaceRecognition_test"
 
@@ -11,7 +11,7 @@ def run():
     cv2.namedWindow(WINDOW_NAME)
     # capture the video from the webcam
     video_capture = cv2.VideoCapture(0)
-    #face_tracker = FaceTracker()
+    face_encoder = FaceEncoder()
 
     while True:
         ret, frame = video_capture.read()
@@ -21,7 +21,8 @@ def run():
             break
 
         # run the face tracker
-        #feedback, output_frame = face_tracker.run(frame)
+        feedback, encoding = face_encoder.run(frame)
+        print(feedback)
 
         # show frames
         cv2.imshow(WINDOW_NAME, frame)
