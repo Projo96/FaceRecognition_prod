@@ -1,16 +1,17 @@
 import cv2
 
-
 from src.utils import compress
+from src.encodings import FaceEncoder
 
-
-WINDOW_NAME = "Ubble Interview"
+WINDOW_NAME = "FaceRecognition_test"
 
 
 def run():
     # init video feed
     cv2.namedWindow(WINDOW_NAME)
     # capture the video from the webcam
+    video_capture = cv2.VideoCapture(0)
+    face_encoder = FaceEncoder()
     path = 'ciao'
     video_capture = cv2.VideoCapture(0)#video path
 
@@ -23,7 +24,8 @@ def run():
             break
 
         # run the face tracker
-        #feedback, output_frame = face_tracker.run(frame)
+        feedback, encoding = face_encoder.run(frame)
+        print(feedback)
 
         # show frames
         cv2.imshow(WINDOW_NAME, frame)
