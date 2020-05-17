@@ -26,6 +26,6 @@ face_authenticator:
 
   threshold: 0.4
 
-  min_frames_to_compare : 10 #minimum number of frames to check in order to give a negative answer, the positive one can be given starting from min_frames_to_compare/5
+  min_frames_to_compare : 30 #minimum number of frames to check in order to give a negative answer, the positive one can be given starting from min_frames_to_compare/5
 
   mod : 'avg' #parameter for makeDecision we can take the minimum or the average of the distances

@@ -1,6 +1,4 @@
 import numpy as np
-from imutils import face_utils
-import dlib
 import face_recognition
 from src.config import get_algorithm_params
 from src.utils import encodingsRead
@@ -23,17 +21,16 @@ class FaceAuthenticator:
         self.unk_frames = 0
         self.saved_encodings = encodingsRead(encoding_path)
 
-
     def run(self, encoding):
-        # compute the bounding box
-
+        # compare the saved encoding and the new one, return the minimus distance between them
         recognised, dist = self.CompareEncodings(self.saved_encodings, encoding['encodings'])
-        feedback, final_decision = self.faceRecOnENC(recognised, dist, len(self.saved_encodings))
+
+        feedback, final_decision = self.coreDecision(recognised, dist, len(self.saved_encodings))
 
         return feedback, final_decision
 
     def CompareEncodings(self, saved_enc, unk_enc):
-        '''
+        """
         New version it only works with already made encodings
         - unk_enc: SINGLE encoding of the person we want to recognize
         - saved_enc: dict list of encodings and name of the person of which we know the name-->data on our server
@@ -42,14 +39,14 @@ class FaceAuthenticator:
         Returns:
           name: True if recognized False otherwise
           dist:the min distance between the new face and the one saved if recognized, 1 otherwise
-        '''
+        """
 
         # initialize the list of names for each face detected
         dist = 1.0  # distance assigned to non recognized encodings
 
-        # attempt to match each encoding to our known encodings
-        # global_number_enc : global parameter that allow us to chose the numeber of known encoding on the server to consider in the comparison
-        # if it is <0 all the encodings are taken
+        # attempt to match each encoding to our known encodings global_number_enc : global parameter that allow us to
+        # chose the number of known encoding on the server to consider in the comparison if it is <0 all the
+        # encodings are taken
         '''
         if global_number_enc > 0:
             data = data["encodings"][0:global_number_enc]
@@ -81,13 +78,13 @@ class FaceAuthenticator:
         return ret, dist
 
     def makeDecision(self, distances, n_frames, mod='avg'):
-        '''
+        """
         - distances: list of all the face distances so far
         - threshold: percentage of frames to be recognised to say True when distances don't works
         - n_frames: current frame number
         - mod : avg or min , takes the average or the minimum of the distances in order to give the answer
         - Return: True/false to say if the two people are the same
-        '''
+        """
 
         if len(distances) > 0:
             if mod == 'avg':
@@ -98,8 +95,8 @@ class FaceAuthenticator:
                 else:
                     print('Only avg or min supported the default will be used')
                     min_d = np.mean(distances)
-
-            dists = np.linspace(0.2, 0.45, 50)
+            up = self.params['tolerance'] * (9 / 10)
+            dists = np.linspace(0.2, up, 50)
             frames = np.linspace(int(self.params['min_frames_to_compare'] / 5),
                                  self.params['min_frames_to_compare'] * 2, 50)
             '''
@@ -130,7 +127,7 @@ class FaceAuthenticator:
 
         return False
 
-    def faceRecOnENC(self, recognised, dist, length):
+    def coreDecision(self, recognised, dist, length):
 
         # we had some cases where no faces where recognised
         if length <= 0:
