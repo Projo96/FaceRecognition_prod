@@ -4,7 +4,7 @@ from src.utils import compress
 from src.encodings import FaceEncoder
 from src.authenticator import FaceAuthenticator
 
-WINDOW_NAME = "FaceRecognition_test"
+WINDOW_NAME = "FaceAthentication"
 
 
 def run():
@@ -14,14 +14,9 @@ def run():
     video_capture = cv2.VideoCapture(0)
     face_encoder = FaceEncoder()
 
-    path = 'C:/Users/Mattia Proietto/Desktop/PRIM Dataset/encodings_face_videos_half/rec-aae24d0b-11c8-432e-8122-126e4ea60611-RUzrbFxkHM-Qm34q3yjV8r2KLKI-1584629640425-video-face.webm.pkl'  # path of the test encodings
+    path = 'C:/Users/super/Jupypter/#11/encodings_88/fa.pkl'  # path of the test encodings
     face_authenticator = FaceAuthenticator(path)
-    v_path = 'C:/Users/Mattia Proietto/Desktop/PRIM Dataset/rec-920e9140-85df-4c9f-976a-cb1dbf965631-7avfemevEJ-KugjJX1pMJjZl6hH-1579721759218-video-face.webm'
 
-    v2_path = 'C:/Users/Mattia Proietto/Desktop/PRIM Dataset/rec-b8b6dd4f-d57d-45ad-b0aa-19cd47baa410-DShHqPGa9M-wH081WkwGS0T7bwc-1580309908256-video-face.webm'
-    video_capture = cv2.VideoCapture(v2_path)  # video path
-
-    i = 0
     while True:
         ret, frame = video_capture.read()
         frame = compress(frame, 2)  # to make it run faster
@@ -47,6 +42,10 @@ def run():
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
+     
+    # When everything is done, release the capture
+    video_capture.release()
+    cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
