@@ -4,18 +4,23 @@ from src.utils import compress
 from src.encodings import FaceEncoder
 from src.authenticator import FaceAuthenticator
 
-WINDOW_NAME = "FaceAthentication"
+WINDOW_NAME = "Face Authentication"
 
 
 def run():
     # init video feed
     cv2.namedWindow(WINDOW_NAME)
-    # capture the video from the webcam
+    # capture the video from the web-cam
     video_capture = cv2.VideoCapture(0)
-    face_encoder = FaceEncoder()
 
-    path = 'C:/Users/super/Jupypter/#11/encodings_88/fa.pkl'  # path of the test encodings
+    # or like this if we want use a saved video
+    #video_capture = cv2.VideoCapture(video path)
+    face_encoder = FaceEncoder()
+    #---------------------------------------------------------#
+    #!!!!!!!!!!!!!!!!!!!CHANGE THE PATH!!!!!!!!!!!!!!!!!!!!!!!!!
+    path = 'path of the encodings of the set A'
     face_authenticator = FaceAuthenticator(path)
+    #---------------------------------------------------------#
 
     while True:
         ret, frame = video_capture.read()
@@ -34,7 +39,7 @@ def run():
 
         # if a final answer is given stop the recognition
         if feedback:
-            print(response)
+            print(response)#True or False based on the fact that the person is recognized or not
             break
 
         # show frames
@@ -42,11 +47,9 @@ def run():
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
-     
-    # When everything is done, release the capture
+
     video_capture.release()
     cv2.destroyAllWindows()
-
 
 if __name__ == "__main__":
     run()
