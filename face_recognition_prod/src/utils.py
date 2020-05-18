@@ -56,6 +56,8 @@ def compress(frame: np.array, compression_factor: float) -> np.array:
     frame = cv2.resize(frame, compressed_shape)
 
     return frame
+
+
 def encodingsRead(path):
     ## PAY ATTENTION:: You need to create the encoding for you dataset using encode_face.py
     data = pickle.loads(open(path, "rb").read())

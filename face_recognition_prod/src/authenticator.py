@@ -155,8 +155,8 @@ class FaceAuthenticator:
 
         # early stopping for positive result
         # starting from min_frames/5 every time we try to give an answer using the function make decision
-        if self.analysed_frames >= self.params[
-            'min_frames_to_compare'] / 5:  # ex 30fps --> 15 frames = 0.5 second  ---early stopping
+        if self.analysed_frames >= self.params['min_frames_to_compare'] / 5:
+            # ex 30fps --> 15 frames = 0.5 second  ---early stopping
 
             if self.makeDecision(self.distances, self.analysed_frames, mod=self.params['mod']):
                 return True, True

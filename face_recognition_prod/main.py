@@ -14,7 +14,7 @@ def run():
     video_capture = cv2.VideoCapture(0)
 
     # or like this if we want use a saved video
-    #video_capture = cv2.VideoCapture(video path)
+    # video_capture = cv2.VideoCapture(video path)
     face_encoder = FaceEncoder()
     #---------------------------------------------------------#
     #!!!!!!!!!!!!!!!!!!!CHANGE THE PATH!!!!!!!!!!!!!!!!!!!!!!!!!
