@@ -66,6 +66,8 @@ class FaceAuthenticator:
             # Given a list of face encodings, compare them to a known face encoding and get a euclidean distance
             # for each comparison face.
             # The distance tells you how similar the faces are.
+            # TODO: aren't doing twice the same with line 62?
+            # TODO: couldn't we call only this function?
             face_distances = face_recognition.face_distance(data, unk_enc)
 
             # Choose the known face with the smallest distance to the new face
@@ -128,7 +130,7 @@ class FaceAuthenticator:
         return False
 
     def coreDecision(self, recognised, dist, length):
-
+        # TODO: this function is very hard to read, it can become much clearer by organising the if else statements better
         # we had some cases where no faces where recognised
         if length <= 0:
             print('NO ENCODINGS SAVED , identification is not possible')
@@ -164,6 +166,7 @@ class FaceAuthenticator:
         # -------------------------------------------------------------------------------------------------------------#
 
         # for ends
+        # TODO: ???
         if self.analysed_frames == 0:
             self.analysed_frames = 1
 

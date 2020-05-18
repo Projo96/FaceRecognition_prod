@@ -18,6 +18,8 @@ def run():
     face_encoder = FaceEncoder()
     #---------------------------------------------------------#
     #!!!!!!!!!!!!!!!!!!!CHANGE THE PATH!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    # TODO: why are we still referring to set A?
     path = 'path of the encodings of the set A'
     face_authenticator = FaceAuthenticator(path)
     #---------------------------------------------------------#
@@ -32,12 +34,16 @@ def run():
         # run the face tracker
         feedback, encoding = face_encoder.run(frame)
         # if no encodings are detected use the next frame
+        # TODO: you can be more precise with the statement by only allowing to run face_authenticator if feedback
+        # has certain value
         if not feedback:
             continue
         # run face authenticator
+        # TODO: try to find more explicit names for feedback and response, like this it is hard to understand which does what
         feedback, response = face_authenticator.run(encoding)
 
         # if a final answer is given stop the recognition
+        # TODO: a bit misleading that feedback is also the output of face_encoder.
         if feedback:
             print(response)#True or False based on the fact that the person is recognized or not
             break
