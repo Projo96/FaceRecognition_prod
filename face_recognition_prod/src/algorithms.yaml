@@ -22,7 +22,7 @@ face_tracker:
 # ==================================================================== #
 face_authenticator:
 
-  tolerance: 0.5 #minimum euclidean distance between two encodings to be recognised as the same
+  tolerance: 0.49 #minimum euclidean distance between two encodings to be recognised as the same
 
   threshold: 0.4
 
