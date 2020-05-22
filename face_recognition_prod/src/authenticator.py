@@ -12,10 +12,6 @@ class FaceAuthenticator:
 
         # load the parameters
         self.params = get_algorithm_params(FACE_AUTHENTICATOR.lower())
-
-        # prepare the output frame:
-        self.output_frame = np.zeros((0, 0))
-
         self.distances = []
         self.analysed_frames = 0
         self.unk_frames = 0
@@ -23,15 +19,14 @@ class FaceAuthenticator:
 
     def run(self, encoding):
         # compare the saved encoding and the new one, return the minimus distance between them
-        recognised, dist = self.CompareEncodings(self.saved_encodings, encoding['encodings'])
+        recognised, dist = self.compareEncodings(self.saved_encodings, encoding['encodings'])
 
         feedback, final_decision = self.coreDecision(recognised, dist, len(self.saved_encodings))
 
         return feedback, final_decision
 
-    def CompareEncodings(self, saved_enc, unk_enc):
+    def compareEncodings(self, saved_enc, unk_enc):
         """
-        New version it only works with already made encodings
         - unk_enc: SINGLE encoding of the person we want to recognize
         - saved_enc: dict list of encodings and name of the person of which we know the name-->data on our server
         - tolerance = max eculidean distance between two encoding to be recognised as the same
@@ -47,35 +42,23 @@ class FaceAuthenticator:
         # attempt to match each encoding to our known encodings global_number_enc : global parameter that allow us to
         # chose the number of known encoding on the server to consider in the comparison if it is <0 all the
         # encodings are taken
-        '''
-        if global_number_enc > 0:
-            data = data["encodings"][0:global_number_enc]
-        else:
-            data = data["encodings"]
-        '''
         ret = False
 
         data = saved_enc['encodings']
         # Compare a list of face encodings against a candidate encoding to see if they match
         # based on the tolerance parameter
-        # Returns:	A list of True/False values indicating which known_face_encodings match the face encoding to check
-        matches = face_recognition.compare_faces(data, unk_enc, tolerance=self.params['tolerance'])
+        # Given a list of face encodings, compare them to a known face encoding and get a euclidean distance
+        # for each comparison face.
+        # The distance tells you how similar the faces are.
+        face_distances = face_recognition.face_distance(data, unk_enc)
 
-        # check to see if we have found a match
-        if True in matches:
-            # Given a list of face encodings, compare them to a known face encoding and get a euclidean distance
-            # for each comparison face.
-            # The distance tells you how similar the faces are.
-            # TODO: aren't doing twice the same with line 62?
-            # TODO: couldn't we call only this function?
-            face_distances = face_recognition.face_distance(data, unk_enc)
-
+        if len(face_distances) > 0:  # if we don't have an empty result
             # Choose the known face with the smallest distance to the new face
-            best_match_index = np.argmin(face_distances)
+            min_match_distance = np.amin(face_distances)
 
-            if matches[best_match_index]:
+            if min_match_distance <= self.params['tolerance']:
                 ret = True
-                dist = face_distances[best_match_index]
+                dist = min_match_distance
 
         return ret, dist
 
@@ -129,52 +112,55 @@ class FaceAuthenticator:
 
         return False
 
-    def coreDecision(self, recognised, dist, length):
-        # TODO: this function is very hard to read, it can become much clearer by organising the if else statements better
-        # we had some cases where no faces where recognised
-        if length <= 0:
-            print('NO ENCODINGS SAVED , identification is not possible')
-            return False, False
-
-        self.analysed_frames += 1
-
-        if not recognised:
-            self.unk_frames += 1
-        else:
-            self.distances.append(dist)
-
-        # -------------------------------------------------------------------------------------------------------------#
-
+    def negativeEarlyStopping(self):
         # early stopping for negative result
         # After tot frames we try to see if we can give a negative answer before the end of the video
         # in particular we check if more than half of the frames weren't
         # recognised at all and if that is the case we can say that
         # the two person are different
+
+        is_final_decision = False
+
         if self.analysed_frames >= self.params['min_frames_to_compare']:  # 45 frames = 1.5 second  -- early stopping
-
             if self.unk_frames / self.analysed_frames > 0.5:  # early stopping for the negative
-                return True, False
+                is_final_decision = True
 
+        return is_final_decision
+
+    def positiveEarlyStopping(self):
         # early stopping for positive result
         # starting from min_frames/5 every time we try to give an answer using the function make decision
+        is_final_decision = False
+
         if self.analysed_frames >= self.params['min_frames_to_compare'] / 5:
             # ex 30fps --> 15 frames = 0.5 second  ---early stopping
-
             if self.makeDecision(self.distances, self.analysed_frames, mod=self.params['mod']):
-                return True, True
+                is_final_decision = True
 
-        # -------------------------------------------------------------------------------------------------------------#
+        return is_final_decision
 
-        # for ends
-        # TODO: ???
-        if self.analysed_frames == 0:
-            self.analysed_frames = 1
+    def coreDecision(self, recognised, dist, length):
 
-        if self.analysed_frames < self.params['min_frames_to_compare'] * 2:
-            return False, False
+        is_final_decision = False
+        final_answer = False
+        # we had some cases where no faces where recognised
+        if length <= 0:
+            print('NO ENCODINGS SAVED , identification is not possible')
+            return is_final_decision, final_answer
 
-        # ex 85% of the frames are recognised
-        if (self.analysed_frames - self.unk_frames) / self.analysed_frames > self.params['threshold']:
-            return True, True
+        self.analysed_frames += 1
+
+        if recognised:
+            self.distances.append(dist)
         else:
-            return True, False
+            self.unk_frames += 1
+
+        if self.negativeEarlyStopping():
+            is_final_decision = True
+            final_answer = False
+
+        elif self.positiveEarlyStopping():
+            is_final_decision = True
+            final_answer = True
+
+        return is_final_decision, final_answer
