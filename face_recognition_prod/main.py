@@ -6,55 +6,57 @@ from src.authenticator import FaceAuthenticator
 
 WINDOW_NAME = "Face Authentication"
 
+PRECOMPUTED_ENCS = False
 
 def run():
     # init video feed
     cv2.namedWindow(WINDOW_NAME)
     # capture the video from the web-cam
-    video_capture = cv2.VideoCapture()
+    video_capture = cv2.VideoCapture(0)
 
     # or like this if we want use a saved video
     # video_capture = cv2.VideoCapture(video path)
-
-    #   define a face encoder
-    face_encoder = FaceEncoder()
-    # ---------------------------------------------------------#
-    # !!!!!!!!!!!!!!!!!!!CHANGE THE PATH!!!!!!!!!!!!!!!!!!!!!!!!!
-    path = 'path of the encodings of the reference video'
-
-    # define a face authenticator
-    face_authenticator = FaceAuthenticator(path)
-    # ---------------------------------------------------------#
+    
+    #---------------------------------------------------------#
+    ref_path = 'C:/Users/super/Jupypter/#11/encodings_88/fa.pkl'
+    input_path = "C:/Users/super/Jupypter/#11/encodings_88/matti.pkl"
+    face_encoder = FaceEncoder(PRECOMPUTED_ENCS, input_path)
+    face_authenticator = FaceAuthenticator(ref_path)
+    #---------------------------------------------------------#
 
     while True:
-        ret, frame = video_capture.read()
-        frame = compress(frame, 2)  # to make it run faster
+        if not PRECOMPUTED_ENCS:
+            ret, frame = video_capture.read(0)
+            frame = compress(frame, 2)  # to make it run faster
+        else:
+            ret = True
+            frame = None
 
         if not ret:
             break
 
-        # run the face encoder
-        feedback, encoding = face_encoder.run(frame)
+        # run the face tracker
+        face_detected, encoding = face_encoder.run(frame)
         # if no encodings are detected use the next frame
-        # has certain value
-        if feedback:
+        if face_detected:
             # run face authenticator
             stop_recognition, final_answer = face_authenticator.run(encoding)
 
             # if a final answer is given stop the recognition
             if stop_recognition:
-                print(final_answer)  # True or False based on the fact that the person is recognized or not
+                # True or False on the fact that the person is recognized or not
+                print(final_answer)
                 break
 
         # show frames
-        cv2.imshow(WINDOW_NAME, frame)
+        if not PRECOMPUTED_ENCS:
+            cv2.imshow(WINDOW_NAME, frame)
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
 
     video_capture.release()
     cv2.destroyAllWindows()
-
 
 if __name__ == "__main__":
     run()
