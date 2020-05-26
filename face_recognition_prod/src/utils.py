@@ -2,6 +2,8 @@ import dlib
 import numpy as np
 import cv2
 import pickle
+import json
+
 
 def find_best_bounding_box(candidate_bounding_boxes, gray_frame):
     # computes the size of the bounding box diagonal
@@ -15,7 +17,7 @@ def find_best_bounding_box(candidate_bounding_boxes, gray_frame):
                 )
                 ** 2,
                 axis=-1,
-                )
+            )
             ** 0.5
     )
 
@@ -59,6 +61,17 @@ def compress(frame: np.array, compression_factor: float) -> np.array:
 
 
 def encodingsRead(path):
-    ## PAY ATTENTION:: You need to create the encoding for you dataset using encode_face.py
     data = pickle.loads(open(path, "rb").read())
     return data
+
+
+def readTrueName(rec_name):
+    with open('./src/labelled_videos.json') as json_file:
+        data_json = json.load(json_file)
+
+    if data_json is None:
+        return "Error"
+    for real_name in data_json:
+        if rec_name in data_json[real_name]:
+            return real_name
+    return "unknown"

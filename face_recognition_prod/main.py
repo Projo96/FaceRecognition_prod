@@ -8,21 +8,22 @@ WINDOW_NAME = "Face Authentication"
 
 PRECOMPUTED_ENCS = False
 
+
 def run():
     # init video feed
-    cv2.namedWindow(WINDOW_NAME)
+    # cv2.namedWindow(WINDOW_NAME)
     # capture the video from the web-cam
     video_capture = cv2.VideoCapture(0)
 
     # or like this if we want use a saved video
     # video_capture = cv2.VideoCapture(video path)
-    
-    #---------------------------------------------------------#
-    ref_path = 'C:/Users/super/Jupypter/#11/encodings_88/fa.pkl'
-    input_path = "C:/Users/super/Jupypter/#11/encodings_88/matti.pkl"
+
+    # ---------------------------------------------------------#
+    ref_path = 'path of the reference encodings'
+    input_path = "path of the of the input encodings if PRECOMPUTED is True"
     face_encoder = FaceEncoder(PRECOMPUTED_ENCS, input_path)
     face_authenticator = FaceAuthenticator(ref_path)
-    #---------------------------------------------------------#
+    # ---------------------------------------------------------#
 
     while True:
         if not PRECOMPUTED_ENCS:
@@ -57,6 +58,7 @@ def run():
 
     video_capture.release()
     cv2.destroyAllWindows()
+
 
 if __name__ == "__main__":
     run()
