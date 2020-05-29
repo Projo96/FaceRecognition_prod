@@ -1,7 +1,8 @@
 import cv2
 import os
 import time
-from src.utils import readTrueName
+import json
+from utils.utils import read_true_name, load_ground_truth
 from src.encodings import FaceEncoder
 from src.authenticator import FaceAuthenticator
 
@@ -21,7 +22,7 @@ def test(ref_path, input_path):
 
         frame = None
         # run the face tracker
-        face_detected, encoding = face_encoder.run(frame)
+        face_detected, encoding, _ = face_encoder.run(frame)
         # if no encodings are detected use the next frame
         if face_detected:
             # run face authenticator
@@ -40,15 +41,16 @@ def test(ref_path, input_path):
 
 
 def run():
-    enc_path = 'YOUR PATH FOR THE ENCODINGS'
+    enc_path = 'data/encodings/'
     ref_videos = os.listdir(enc_path)
     input_videos = ref_videos
+    ground_truth = load_ground_truth()
     total_T = 0
     positive_T = 0
     total_F = 0
     positive_F = 0
 
-    # the print are used ti give some insight about performances
+    # the print are used to give some insight about performances
     # the print at the bottom give us the time to compare one with all the others
     for ref in ref_videos:
 
@@ -58,13 +60,16 @@ def run():
             res = test(enc_path + ref, enc_path + inputv)
             ref_w = ref[:-4] + ".webm"
             input_w = inputv[:-4] + ".webm"
+            ref_person = read_true_name(ref_w, ground_truth)
+            input_person = read_true_name(input_w, ground_truth)
+            print("REF: ", ref_person, "GT input: ", input_person, "same person?:", res)
             # TEST T: SAME PERSON
-            if readTrueName(ref_w) == readTrueName(input_w):
+            if ref_person == input_person:
                 total_T += 1
                 if res:
                     positive_T += 1
             # TEST F: DIFFERENT PERSON
-            elif readTrueName(ref_w) != readTrueName(input_w):
+            else:
                 total_F += 1
                 if res:
                     positive_F += 1
