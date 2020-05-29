@@ -1,31 +1,32 @@
 import numpy as np
 import face_recognition
 from src.config import get_algorithm_params
-from src.utils import encodingsRead
+from utils.utils import encodings_read
 
 FACE_AUTHENTICATOR = "FACE_AUTHENTICATOR"
 
 
 class FaceAuthenticator:
 
-    def __init__(self, encoding_path):
+    def __init__(self, encoding_path, demo_mode=0):
 
         # load the parameters
         self.params = get_algorithm_params(FACE_AUTHENTICATOR.lower())
         self.distances = []
         self.analysed_frames = 0
         self.unk_frames = 0
-        self.saved_encodings = encodingsRead(encoding_path)
+        self.saved_encodings = encodings_read(encoding_path)
+        self.demo_mode = demo_mode
 
     def run(self, encoding):
-        # compare the saved encoding and the new one, return the minimus distance between them
-        recognised, dist = self.compareEncodings(self.saved_encodings, encoding['encodings'])
+        # compare the saved encoding and the new one, return the minimum distance between them
+        recognised, dist = self.compare_encodings(self.saved_encodings, encoding['encodings'])
 
-        feedback, final_decision = self.coreDecision(recognised, dist, len(self.saved_encodings))
+        feedback, final_decision = self.core_decision(recognised, dist)
 
         return feedback, final_decision
 
-    def compareEncodings(self, saved_enc, unk_enc):
+    def compare_encodings(self, saved_enc, unk_enc):
         """
         - unk_enc: SINGLE encoding of the person we want to recognize
         - saved_enc: dict list of encodings and name of the person of which we know the name-->data on our server
@@ -39,9 +40,6 @@ class FaceAuthenticator:
         # initialize the list of names for each face detected
         dist = 1.0  # distance assigned to non recognized encodings
 
-        # attempt to match each encoding to our known encodings global_number_enc : global parameter that allow us to
-        # chose the number of known encoding on the server to consider in the comparison if it is <0 all the
-        # encodings are taken
         ret = False
 
         data = saved_enc['encodings']
@@ -62,7 +60,7 @@ class FaceAuthenticator:
 
         return ret, dist
 
-    def makeDecision(self, distances, n_frames, mod='avg'):
+    def make_decision(self, distances, n_frames, mod='avg'):
         """
         - distances: list of all the face distances so far
         - threshold: percentage of frames to be recognised to say True when distances don't works
@@ -112,7 +110,7 @@ class FaceAuthenticator:
 
         return False
 
-    def negativeEarlyStopping(self):
+    def negative_early_stopping(self):
         # early stopping for negative result
         # After tot frames we try to see if we can give a negative answer before the end of the video
         # in particular we check if more than half of the frames weren't
@@ -127,24 +125,24 @@ class FaceAuthenticator:
 
         return is_final_decision
 
-    def positiveEarlyStopping(self):
+    def positive_early_stopping(self):
         # early stopping for positive result
         # starting from min_frames/5 every time we try to give an answer using the function make decision
         is_final_decision = False
 
         if self.analysed_frames >= self.params['min_frames_to_compare'] / 5:
             # ex 30fps --> 15 frames = 0.5 second  ---early stopping
-            if self.makeDecision(self.distances, self.analysed_frames, mod=self.params['mod']):
+            if self.make_decision(self.distances, self.analysed_frames, mod=self.params['mod']):
                 is_final_decision = True
 
         return is_final_decision
 
-    def coreDecision(self, recognised, dist, length):
+    def core_decision(self, recognised, dist):
 
         is_final_decision = False
         final_answer = False
         # we had some cases where no faces where recognised
-        if length <= 0:
+        if len(self.saved_encodings) <= 0:
             print('NO ENCODINGS SAVED , identification is not possible')
             return is_final_decision, final_answer
 
@@ -155,11 +153,11 @@ class FaceAuthenticator:
         else:
             self.unk_frames += 1
 
-        if self.negativeEarlyStopping():
+        if self.negative_early_stopping():
             is_final_decision = True
             final_answer = False
 
-        elif self.positiveEarlyStopping():
+        elif self.positive_early_stopping():
             is_final_decision = True
             final_answer = True
 
